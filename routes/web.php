@@ -5,6 +5,8 @@ use \App\Http\Controllers\SpaController;
 use \App\Http\Controllers\UserController;
 use \App\Http\Controllers\RoleController;
 use \App\Http\Controllers\DefaultController;
+use \App\Http\Controllers\TurnController;
+use \App\Http\Controllers\CalendarController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -24,6 +26,9 @@ Route::middleware(['auth:sanctum', 'verified'])
 
 Route::middleware(['auth:sanctum', 'verified'])
     ->get('/settings', SpaController::class)->name('settings');
+
+Route::middleware(['auth:sanctum', 'verified'])
+    ->get('/calendar/all', [CalendarController::class, 'index'])->name('calendar.all');
 
 Route::group(['middleware' => 'auth', 'prefix' => 'users'], function () {
     Route::middleware(['auth:sanctum', 'verified'])
@@ -67,4 +72,19 @@ Route::group(['middleware' => 'auth', 'prefix' => 'roles'], function () {
 Route::group(['middleware' => 'auth', 'prefix' => 'defaults'], function () {
     Route::get('/lists', [DefaultController::class, 'getLists'])
         ->name('defaults.lists');
+});
+
+Route::group(['middleware' => 'auth', 'prefix' => 'camera'], function () {
+    Route::get('/all', [TurnController::class, 'getAll'])
+        ->name('turns.all');
+    Route::get('{id}/show', [TurnController::class, 'get'])
+        ->name('turns.show');
+    Route::post('/create', [TurnController::class, 'store'])
+        ->name('turns.create');
+    Route::post('{id}/edit', [TurnController::class, 'update'])
+        ->name('turns.edit');
+    Route::delete('{id}/remove', [TurnController::class, 'delete'])
+        ->name('turns.remove');
+    Route::post('{id}/set_status', [TurnController::class, 'setStatus'])
+        ->name('turns.setStatus');
 });
