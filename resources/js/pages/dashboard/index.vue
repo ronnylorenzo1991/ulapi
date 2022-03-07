@@ -44,17 +44,25 @@
                         <div class="input-group-prepend">
                             <span class="input-group-text"><i class="ni ni-calendar-grid-58"></i></span>
                         </div>
-                        <flatPicker class="form-control datepicker pl-2" placeholder="Seleccionar fecha" v-model="newTurn.date"/>
+                        <flatPicker class="form-control datepicker pl-2" placeholder="Seleccionar fecha"
+                                    v-model="newTurn.date"/>
                     </div>
+                </div>
 
-                    <div class="m-3">
-                        <div class="custom-control custom-radio mb-3 pt-3" v-for="(item,key) in availableTimes">
-                            <input type="radio" :id="'available_time_radio_' + key" name="available_time_radio"
-                                   class="custom-control-input" :value="item" v-model="newTurn.time">
-                            <label class="custom-control-label"
-                                   :for="'available_time_radio_' + key"
-                                   v-text="item"></label>
-                        </div>
+                <div class="form-group mb-3">
+                    <div class="input-group input-group-merge input-group-alternative">
+                        <multi_select v-model="newTurn.user_id" :options="lists.clients"
+                                      label="name" track-by="id" placeholder="Modulo"></multi_select>
+                    </div>
+                </div>
+
+                <div class="m-3">
+                    <div class="custom-control custom-radio mb-3 pt-3" v-for="(item,key) in availableTimes">
+                        <input type="radio" :id="'available_time_radio_' + key" name="available_time_radio"
+                               class="custom-control-input" :value="item" v-model="newTurn.time">
+                        <label class="custom-control-label"
+                               :for="'available_time_radio_' + key"
+                               v-text="item"></label>
                     </div>
                 </div>
             </div>
@@ -88,6 +96,7 @@ export default {
                 time: null,
                 date: null,
                 request: false,
+                user_id: false,
             },
             availableTimes: [
                 '8:00',
@@ -112,7 +121,6 @@ export default {
                         this.isLoading = false
                         dialog.success(response.data.message)
                         this.toggleShowMenuModal()
-                        this.reloadCalendar()
                         this.getLists(['permissions'])
                     } else {
                         console.log(response.data)
@@ -152,10 +160,9 @@ export default {
                 }
             })
         },
-
-        reloadCalendar() {
-
-        }
+    },
+    mounted() {
+        this.getLists(['permissions', 'clients'])
     }
 }
 </script>

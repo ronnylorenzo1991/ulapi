@@ -43,7 +43,7 @@ class TurnController extends Controller
             'status_id' => $request->get('status') ?? 1,
             'date'      => $request->get('date'),
             'time'      => $request->get('time'),
-            'user_id'   => Auth::user()->id,
+            'user_id'   => $request->get('user_id'),
         ];
 
         try {

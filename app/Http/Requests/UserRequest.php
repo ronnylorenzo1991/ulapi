@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Users\Entity\User;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class UserRequest extends FormRequest
@@ -33,7 +34,7 @@ class UserRequest extends FormRequest
                 'required', 'email', Rule::unique((new User)->getTable())->ignore($this->route()->user->id ?? null)
             ],
             'password' => [
-                $this->route()->user ? 'nullable' : 'required', 'confirmed', 'min:6'
+                Auth::user()->hasRole('administrador') ? 'nullable' : 'required', 'confirmed', 'min:6'
             ]
         ];
     }
