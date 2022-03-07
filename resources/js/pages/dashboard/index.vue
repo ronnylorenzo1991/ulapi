@@ -28,7 +28,7 @@
                                 </div>
                             </div>
                         </div>
-                        <Calendar :show-header-menu="false"
+                        <Calendar :show-header-menu="true"
                                   :url-events="turnsUrl"></Calendar>
                     </div>
                 </div>
