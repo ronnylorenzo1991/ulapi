@@ -16,13 +16,8 @@ class TurnRepository extends SharedRepositoryEloquent
 
     public function getTurnNumber()
     {
-        $lastTurnNumber = Turn::orderBy('id', 'desc')->first()->number;
+        $lastTurnNumber = Turn::orderBy('id', 'desc')->first()->number ?? 0;
 
-        if (!empty($lastTurnNumber)) {
-
-            return $lastTurnNumber + 1;
-        }
-
-        return 1;
+        return $lastTurnNumber + 1;
     }
 }

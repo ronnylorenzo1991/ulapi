@@ -19,7 +19,7 @@
                                 <div class="col">
                                     <ul class="nav nav-pills justify-content-end">
                                         <li class="nav-item mr-2 mr-md-0">
-                                            <a @click.prevent="toggleShowMenuModal(true)" href="#"
+                                            <a @click.prevent="openTurnModal()" href="#"
                                                class="nav-link py-2 px-3 active">
                                                 <span class="d-none d-md-block">+ Nuevo Turno</span>
                                             </a>
@@ -29,58 +29,40 @@
                             </div>
                         </div>
                         <Calendar :show-header-menu="true"
-                                  :url-events="turnsUrl"></Calendar>
+                                  :url-events="turnsUrl"
+                                  @removeEvent="removeTurn"
+                                  @eventDrop="updateTurnDate"
+                                  @editEvent="editTurn"
+                                  ref="calendar"
+                        />
                     </div>
                 </div>
             </div>
         </div>
-        <modal title="Añadir Turno"
-               :show="showNewTurnModal"
-               @accept="saveTurnData"
-               @cancel="toggleShowMenuModal(false)">
-            <div class="container">
-                <div class="form-group mb-3">
-                    <div class="input-group input-group-merge input-group-alternative">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="ni ni-calendar-grid-58"></i></span>
-                        </div>
-                        <flatPicker class="form-control datepicker pl-2" placeholder="Seleccionar fecha"
-                                    v-model="newTurn.date"/>
-                    </div>
-                </div>
+        <turn-modal :current-turn="currentTurn"
+                    :lists="lists"
+                    :available-times="availableTimes"
+                    :show="showTurnModal"
+                    @close="closeTurnModal"
+        />
 
-                <div class="form-group mb-3">
-                    <div class="input-group input-group-merge input-group-alternative">
-                        <multi_select v-model="newTurn.user_id" :options="lists.clients"
-                                      label="name" track-by="id" placeholder="Modulo"></multi_select>
-                    </div>
-                </div>
-
-                <div class="m-3">
-                    <div class="custom-control custom-radio mb-3 pt-3" v-for="(item,key) in availableTimes">
-                        <input type="radio" :id="'available_time_radio_' + key" name="available_time_radio"
-                               class="custom-control-input" :value="item" v-model="newTurn.time">
-                        <label class="custom-control-label"
-                               :for="'available_time_radio_' + key"
-                               v-text="item"></label>
-                    </div>
-                </div>
-            </div>
-        </modal>
     </div>
 </template>
 <script>
 import Modal from '../../components/utils/modal'
-import Calendar from '../../components/Calendar/calendar'
+import Calendar from '../../components/Calendar/Calendar'
 import flatPicker from "vue-flatpickr-component";
 import "flatpickr/dist/flatpickr.css";
 import dialog from "../../libs/custom/dialog";
+import TurnModal from "./partials/TurnModal";
+import format from "date-fns/format";
 
 
 export default {
     name: "dashboard",
 
     components: {
+        TurnModal,
         Modal,
         Calendar,
         flatPicker
@@ -91,39 +73,68 @@ export default {
             turnsUrl: route('calendar.all'),
             lists: {},
             isLoading: false,
-            showNewTurnModal: false,
-            newTurn: {
+            showTurnModal: false,
+            currentTurn: {},
+            defaultTurn: {
                 time: null,
                 date: null,
                 request: false,
                 user_id: false,
             },
             availableTimes: [
-                '8:00',
-                '10:00',
-                '14:00',
-                '16:00'
+                '08:00:00',
+                '10:00:00',
+                '14:00:00',
+                '16:00:00'
             ]
         }
     },
 
     methods: {
-        toggleShowMenuModal($force = null) {
-            this.showNewTurnModal = $force != null ? $force : !this.showNewTurnModal
+        removeTurn(turn) {
+            dialog.confirm(null, 'Seguro que desea eliminar el turno?').then(confirmed => {
+                if (!confirmed) {
+                    return
+                }
+
+                this.isLoading = true
+                axios.delete(route('turns.remove', turn.extendedProps.db_id))
+                    .then(response => {
+                        if (response.status === 200) {
+                            this.isLoading = false
+                            dialog.success(response.data.message)
+                            this.reloadCalendar()
+                        } else {
+                            this.isLoading = false
+                            dialog.error()
+                        }
+                    }).catch(error => {
+                    this.isLoading = false
+                    if (!error.response) {
+                        // network error
+                        this.errorStatus = 'Error: Problemas de Conexión';
+                        dialog.error(this.errorStatus)
+                    } else {
+                        this.errorStatus = error.response.data.message;
+                        dialog.error(this.errorStatus)
+                    }
+                })
+            })
         },
 
-        saveTurnData() {
+        updateTurnDate(turn) {
             this.isLoading = true
-            let url = this.newTurn.id ? route('turns.edit', this.newTurn.id) : route('turns.create')
-            axios.post(url, this.newTurn)
+            axios.post(route('turns.edit', turn.extendedProps.db_id),
+                {
+                    time: turn.extendedProps.time,
+                    user_id: turn.extendedProps.user_id,
+                    date: this.getDateFormatted(turn.start),
+                })
                 .then(response => {
                     if (response.status === 200) {
                         this.isLoading = false
-                        dialog.success(response.data.message)
-                        this.toggleShowMenuModal()
-                        this.getLists(['permissions'])
+                        this.reloadCalendar()
                     } else {
-                        console.log(response.data)
                         dialog.error()
                     }
                 }).catch(error => {
@@ -137,6 +148,64 @@ export default {
                     dialog.error(this.errorStatus, error.response.data.errors)
                 }
             })
+        },
+
+        editTurn(turn) {
+            this.openTurnModal(false, turn.extendedProps.db_id)
+        },
+
+        reloadCalendar() {
+            this.$refs.calendar.refreshEvents()
+        },
+
+        openTurnModal(create = true, turnId) {
+            this.isLoading = true
+            if (create) {
+                this.currentTurn = this.defaultTurn
+                this.showTurnModal = true
+                this.isLoading = false
+                return
+            }
+
+            axios.get(route('turns.show', turnId))
+                .then(response => {
+                    if (response.status === 200) {
+                        this.isLoading = false
+                        console.log(new Date(response.data.turn.date))
+                        this.currentTurn = {
+                            id: response.data.turn.id,
+                            time: response.data.turn.time,
+                            date: this.getDateFormatted(response.data.turn.date),
+                            request: response.data.turn.request,
+                            user_id: response.data.turn.user_id,
+                        }
+                        this.showTurnModal = true
+                    } else {
+                        this.isLoading = false
+                        dialog.error()
+                    }
+                }).catch(error => {
+                this.isLoading = false
+                if (!error.response) {
+                    // network error
+                    this.errorStatus = 'Error: Problemas de Conexión';
+                    dialog.error(this.errorStatus)
+                } else {
+                    this.errorStatus = error.response.data.message;
+                    dialog.error(this.errorStatus)
+                }
+            })
+
+
+        },
+
+        getDateFormatted(date) {
+           return format(new Date(new Date(date).toISOString().slice(0, 10) + 'T00:00'),'yyyy-MM-dd')
+        },
+
+        closeTurnModal() {
+            this.showTurnModal = false
+            this.reloadCalendar()
         },
 
         getLists(list) {

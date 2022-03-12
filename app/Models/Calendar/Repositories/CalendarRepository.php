@@ -46,6 +46,7 @@ class CalendarRepository
             ->map(function ($turn, $key) use ($startId) {
                 return [
                     'id'              => $startId + $key,
+                    'db_id'           => $turn->id,
                     'description'     => 'Turno Pendiente No.'.$turn->number,
                     'title'           => $turn->user->name.' - Pendiente',
                     'start'           => $turn->date->format('Y-m-d'),
@@ -55,7 +56,11 @@ class CalendarRepository
                     'eventTypeSort'   => '2',
                     'eventType'       => '0',
                     'permission'      => 'turn.show',
+                    'time'            => $turn->time,
+                    'user_id'         => $turn->user_id,
+                    'status_id'       => $turn->status_id,
                     'link'            => route('turns.show', $turn->id),
+                    'clickable'       => true,
                 ];
             })
             ->toArray();

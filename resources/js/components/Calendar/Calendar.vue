@@ -16,7 +16,7 @@
                     </div>
                     <div class="right">
                         <multi_select name="selectView" :searchable="false" track-by="value" label='name'
-                                   v-model="currentViewType" :options="getSelectViewOptions"/>
+                                      v-model="currentViewType" :options="getSelectViewOptions"/>
                     </div>
                 </div>
                 <FullCalendar
@@ -26,6 +26,28 @@
                 </FullCalendar>
             </div>
         </div>
+        <ContextMenu ref="menu" :quick-event-focused="isQuickEventFocused" :key="contextMenuKey">
+            <template>
+                <div v-if="isHandleDate">
+                    <span class="dropdown-item" data-cy="btn_goto_day" @click="goToPointerDay('listDay')">
+                        <i class="fa fa-calendar"></i> Ir al Dia
+                    </span>
+                    <span class="dropdown-item" data-cy="btn_goto_week" @click="goToPointerDay('listWeek')">
+                        <i class="fa fa-calendar-minus"></i> Ir a la Semana
+                    </span>
+                </div>
+                <div v-if="isHandleEvent">
+                    <span class="dropdown-item" data-cy="btn_remove_event"
+                          @click="editEvent">
+                        <i class="fa fa-edit" aria-hidden="true"></i> Editar Turno
+                    </span>
+                    <span class="dropdown-item" data-cy="btn_remove_event"
+                          @click="removeEvent">
+                        <i class="fa fa-trash" aria-hidden="true"></i> Eliminar Turno
+                    </span>
+                </div>
+            </template>
+        </ContextMenu>
     </div>
 </template>
 
@@ -37,12 +59,14 @@ import listPlugin from '@fullcalendar/list'
 import interactionPlugin from '@fullcalendar/interaction'
 import momentPlugin from '@fullcalendar/moment'
 import format from 'date-fns/format';
+import ContextMenu from "./ContextMenu";
 
 export default {
     name: "dashboard",
 
     components: {
         FullCalendar,
+        ContextMenu,
     },
 
     props: {
@@ -57,14 +81,14 @@ export default {
 
     data: function () {
         return {
+            isQuickEventFocused: false,
+            contextMenuKey: 0,
             canDrag: false,
             calendarOptions: {
                 contentHeight: 1000,
                 eventRender: this.eventRender,
                 headerToolbar: false,
-                customButtons: {
-
-                },
+                customButtons: {},
                 events: this.urlEvents,
                 plugins: [
                     dayGridPlugin,
@@ -89,10 +113,20 @@ export default {
                 dayMaxEvents: true,
                 weekends: true,
                 weekNumbers: false,
+                eventAllow: this.canDrag,
+                eventDrop: this.eventDrop,
+                eventClick: this.eventClick,
+                dateClick: this.handleDateSelect,
+                eventContent: this.eventContent
             },
             currentDate: null,
             currentViewType: 'dayGridMonth',
             maxMobileWidth: 574,
+            isHandleEvent: false,
+            isHandleDate: false,
+            calendarApi: null,
+            pointerDate: null,
+            pointerEvent: null,
         }
     },
 
@@ -117,19 +151,19 @@ export default {
         getSelectViewOptions() {
             return [
                 {
-                    'name': 'Month',
+                    'name': 'Mes',
                     'value': this.isMobileScreen ? 'listMonth' : 'dayGridMonth',
                 },
                 {
-                    'name': 'Week',
+                    'name': 'Semana',
                     'value': 'listWeek',
                 },
                 {
-                    'name': 'Day',
+                    'name': 'Día',
                     'value': 'listDay',
                 },
                 {
-                    'name': 'Today',
+                    'name': 'Hoy',
                     'value': 'today',
                 },
             ]
@@ -173,6 +207,78 @@ export default {
             }
             this.currentDate = date
         },
+
+        eventDrop(event) {
+            this.$emit('eventDrop', event.event)
+        },
+
+        eventClick(event) {
+            if (event.event.extendedProps.clickable === true) {
+                this.isHandleDate = false
+                this.isHandleEvent = true
+                this.pointerEvent = event.event
+                this.$refs.menu.open(event.jsEvent)
+            }
+        },
+
+        keepContextMenu() {
+            this.isQuickEventFocused = true
+        },
+
+        unkeepContextMenu() {
+            this.isQuickEventFocused = false
+        },
+
+        handleDateSelect(selectInfo) {
+            this.isHandleDate = true
+            this.isHandleEvent = false
+            this.$refs.menu.open(selectInfo.jsEvent)
+            this.pointerDate = selectInfo.dateStr
+            selectInfo.jsEvent.preventDefault();
+        },
+
+        goToDay(selectInfo) {
+            this.calendarApi.changeView('listDay')
+            this.calendarApi.gotoDate(selectInfo.dateStr)
+            this.closeContextMenu()
+            this.updateCurrentViewType()
+        },
+
+        goToWeek(selectInfo) {
+            this.calendarApi.changeView('listDay')
+            this.calendarApi.gotoDate(selectInfo.dateStr)
+            this.forceCloseContextMenu()
+            this.updateCurrentViewType()
+        },
+
+        goToPointerDay(view) {
+            this.calendarApi.changeView(view)
+            this.calendarApi.gotoDate(this.pointerDate)
+            this.forceCloseContextMenu()
+            this.updateCurrentViewType()
+        },
+
+        closeContextMenu() {
+            this.unkeepContextMenu()
+            this.$refs.menu.close()
+        },
+
+        forceCloseContextMenu() {
+            this.contextMenuKey++
+        },
+
+        removeEvent() {
+            this.$emit('removeEvent', this.pointerEvent)
+        },
+
+        editEvent() {
+            this.$emit('editEvent', this.pointerEvent)
+            this.closeContextMenu()
+        },
+
+        refreshEvents() {
+            this.calendarApi.refetchEvents()
+        }
     },
 
     created() {
@@ -355,7 +461,6 @@ export default {
 
 .calendar-header button#next, .calendar-header button#prev  {
     color: #0a5e9d;
-    padding: 0 18px;
 }
 
 .fc-col-header {

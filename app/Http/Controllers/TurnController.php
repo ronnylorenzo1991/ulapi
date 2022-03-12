@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Turns\Entity\Turn;
 use App\Models\Turns\Repository\TurnRepository;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class TurnController extends Controller
 {
@@ -36,6 +34,22 @@ class TurnController extends Controller
         return json_encode($turns);
     }
 
+    public function get($id)
+    {
+        try {
+            $turn = $this->turnRepository->findOrFail($id);
+
+            return json_encode([
+                'turn' => $turn
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Hubo un problema al buscar los datos'
+            ], 400);
+        }
+    }
+
     public function store(Request $request)
     {
         $data = [
@@ -51,6 +65,45 @@ class TurnController extends Controller
 
             return json_encode([
                 'message' => 'El turno ha sido añadido correctamente',
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Hubo un problema al guardar los datos'
+            ], 400);
+        }
+    }
+
+    public function update($id, Request $request)
+    {
+        $data = [
+            'date'      => $request->get('date'),
+            'time'      => $request->get('time'),
+            'user_id'   => $request->get('user_id'),
+        ];
+
+        try {
+            $this->turnRepository->update($data, $id);
+
+            return json_encode([
+                'message' => 'El turno ha sido actualizado correctamente',
+            ]);
+
+        } catch (\Exception $e) {
+            dd($e);
+            return response()->json([
+                'message' => 'Hubo un problema al guardar los datos'
+            ], 400);
+        }
+    }
+
+    public function delete($id)
+    {
+        try {
+            $this->turnRepository->delete($id);
+
+            return json_encode([
+                'message' => 'Turno eliminado satisfactoriamente'
             ]);
 
         } catch (\Exception $e) {
