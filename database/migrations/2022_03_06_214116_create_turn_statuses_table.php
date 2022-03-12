@@ -15,6 +15,7 @@ class CreateTurnStatusesTable extends Migration
     {
         Schema::create('turn_statuses', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
             $table->timestamps();
         });
     }
