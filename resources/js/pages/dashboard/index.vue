@@ -33,6 +33,10 @@
                                   @removeEvent="removeTurn"
                                   @eventDrop="updateTurnDate"
                                   @editEvent="editTurn"
+                                  @addEvent="addTurn"
+                                  @addPayment="addTurnPayment"
+                                  @confirmEvent="confirmTurn"
+                                  @pendingEvent="pendingTurn"
                                   ref="calendar"
                         />
                     </div>
@@ -43,8 +47,9 @@
                     :lists="lists"
                     :available-times="availableTimes"
                     :show="showTurnModal"
+                    :forPayment="forPayment"
                     @close="closeTurnModal"
-        />
+                    :key="turnModalKey"/>
 
     </div>
 </template>
@@ -70,6 +75,8 @@ export default {
 
     data: function () {
         return {
+            turnModalKey: 0,
+            forPayment: false,
             turnsUrl: route('calendar.all'),
             lists: {},
             isLoading: false,
@@ -150,12 +157,62 @@ export default {
             })
         },
 
+        changeTurnStatus(turn, status) {
+            this.isLoading = true
+            axios.post(route('turns.edit', turn.extendedProps.db_id),
+                {
+                    time: turn.extendedProps.time,
+                    user_id: turn.extendedProps.user_id,
+                    status_id: status,
+                    date: this.getDateFormatted(turn.start),
+                })
+                .then(response => {
+                    if (response.status === 200) {
+                        this.isLoading = false
+                        this.reloadCalendar()
+                    } else {
+                        dialog.error()
+                    }
+                }).catch(error => {
+                this.isLoading = false
+                if (!error.response) {
+                    // network error
+                    this.errorStatus = 'Error: Problemas de Conexión';
+                    dialog.error(this.errorStatus)
+                } else {
+                    this.errorStatus = error.response.data.message;
+                    dialog.error(this.errorStatus, error.response.data.errors)
+                }
+            })
+        },
+
+        addTurnPayment(turn) {
+            this.forPayment = true
+            this.editTurn(turn)
+        },
+
+        confirmTurn(turn) {
+            this.changeTurnStatus(turn, 2)
+        },
+
+        pendingTurn(turn) {
+            this.changeTurnStatus(turn, 1)
+        },
+
         editTurn(turn) {
             this.openTurnModal(false, turn.extendedProps.db_id)
         },
 
         reloadCalendar() {
             this.$refs.calendar.refreshEvents()
+        },
+
+        addTurn(pointerDate) {
+            this.isLoading = true
+            this.currentTurn = this.defaultTurn
+            this.currentTurn.date = pointerDate
+            this.showTurnModal = true
+            this.isLoading = false
         },
 
         openTurnModal(create = true, turnId) {
@@ -171,13 +228,15 @@ export default {
                 .then(response => {
                     if (response.status === 200) {
                         this.isLoading = false
-                        console.log(new Date(response.data.turn.date))
                         this.currentTurn = {
                             id: response.data.turn.id,
                             time: response.data.turn.time,
                             date: this.getDateFormatted(response.data.turn.date),
                             request: response.data.turn.request,
                             user_id: response.data.turn.user_id,
+                        }
+                        if (this.forPayment) {
+                            this.currentTurn.payment = response.data.turn.payment
                         }
                         this.showTurnModal = true
                     } else {
@@ -204,7 +263,9 @@ export default {
         },
 
         closeTurnModal() {
+            this.turnModalKey++
             this.showTurnModal = false
+            this.forPayment = false
             this.reloadCalendar()
         },
 

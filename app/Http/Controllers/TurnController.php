@@ -80,6 +80,8 @@ class TurnController extends Controller
             'date'      => $request->get('date'),
             'time'      => $request->get('time'),
             'user_id'   => $request->get('user_id'),
+            'status_id' => $request->get('status_id', 1),
+            'payment'   => $request->get('payment'),
         ];
 
         try {

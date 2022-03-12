@@ -16,7 +16,7 @@ class RoleSeeder extends Seeder
     public function run()
     {
         $admin = Role::create(['name' => 'administrador']);
-        $vigilante = Role::create(['name' => 'vigilante']);
+        $vigilante = Role::create(['name' => 'cliente']);
 
         Permission::create(['name' => 'settings.weights.create'])->syncRoles([$admin]);
         Permission::create(['name' => 'settings.weights.edit'])->syncRoles([$admin]);

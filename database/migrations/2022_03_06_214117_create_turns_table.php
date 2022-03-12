@@ -18,6 +18,7 @@ class CreateTurnsTable extends Migration
             $table->bigInteger('number')->unique();
             $table->date('date');
             $table->time('time');
+            $table->decimal('payment', 12)->nullable();
             $table->timestamps();
 
             $table->unsignedBigInteger('user_id')->nullable();

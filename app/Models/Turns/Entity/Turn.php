@@ -15,6 +15,7 @@ class Turn extends Model
         'number',
         'date',
         'time',
+        'payment',
         'user_id',
         'status_id',
     ];

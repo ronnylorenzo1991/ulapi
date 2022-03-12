@@ -29,6 +29,9 @@
         <ContextMenu ref="menu" :quick-event-focused="isQuickEventFocused" :key="contextMenuKey">
             <template>
                 <div v-if="isHandleDate">
+                     <span class="dropdown-item" data-cy="btn_goto_day" @click="addEvent">
+                        <i class="fa fa-calendar-plus"></i> Agregar Turno
+                    </span>
                     <span class="dropdown-item" data-cy="btn_goto_day" @click="goToPointerDay('listDay')">
                         <i class="fa fa-calendar"></i> Ir al Dia
                     </span>
@@ -37,7 +40,19 @@
                     </span>
                 </div>
                 <div v-if="isHandleEvent">
-                    <span class="dropdown-item" data-cy="btn_remove_event"
+                    <span class="dropdown-item" data-cy="btn_add_payment_event" v-if="pointerEvent.extendedProps.status_id >= 2"
+                          @click="addPayment">
+                        <i class="fa fa-money-bill" aria-hidden="true"></i> Cotizar Turno
+                    </span>
+                    <span class="dropdown-item" data-cy="btn_confirm_event" v-if="pointerEvent.extendedProps.status_id === 1"
+                          @click="confirmEvent">
+                        <i class="fa fa-calendar-check" aria-hidden="true"></i> Confirmar Turno
+                    </span>
+                    <span class="dropdown-item" data-cy="btn_pending_event" v-else
+                          @click="pendingEvent">
+                        <i class="fa fa-calendar-check" aria-hidden="true"></i> Pasar a pendiente
+                    </span>
+                    <span class="dropdown-item" data-cy="btn_edit_event"
                           @click="editEvent">
                         <i class="fa fa-edit" aria-hidden="true"></i> Editar Turno
                     </span>
@@ -258,6 +273,11 @@ export default {
             this.updateCurrentViewType()
         },
 
+        addEvent() {
+            this.$emit('addEvent', this.pointerDate)
+            this.forceCloseContextMenu()
+        },
+
         closeContextMenu() {
             this.unkeepContextMenu()
             this.$refs.menu.close()
@@ -267,8 +287,24 @@ export default {
             this.contextMenuKey++
         },
 
+        confirmEvent() {
+            this.$emit('confirmEvent', this.pointerEvent)
+            this.forceCloseContextMenu()
+        },
+
+        addPayment() {
+            this.$emit('addPayment', this.pointerEvent)
+            this.forceCloseContextMenu()
+        },
+
+        pendingEvent() {
+            this.$emit('pendingEvent', this.pointerEvent)
+            this.forceCloseContextMenu()
+        },
+
         removeEvent() {
             this.$emit('removeEvent', this.pointerEvent)
+            this.forceCloseContextMenu()
         },
 
         editEvent() {

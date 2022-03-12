@@ -1,9 +1,10 @@
 <template>
     <modal :title="getTitle"
            :show="show"
+           v-if="show"
            @accept="saveTurnData"
            @cancel="closeModal">
-        <div class="container">
+        <div class="container" v-show="!forPayment">
             <div class="form-group mb-3">
                 <div class="input-group input-group-merge input-group-alternative">
                     <div class="input-group-prepend">
@@ -31,6 +32,13 @@
                 </div>
             </div>
         </div>
+        <div class="container" v-show="forPayment">
+            <div class="form-group mb-3">
+                <div class="input-group input-group-merge input-group-alternative">
+                    <input type="text" class="form-control" v-model="turn.payment"  placeholder="Añadir pago">
+                </div>
+            </div>
+        </div>
     </modal>
 </template>
 
@@ -50,6 +58,10 @@ export default {
 
     props: {
         show: {
+            type: Boolean,
+            default: false,
+        },
+        forPayment: {
             type: Boolean,
             default: false,
         },
@@ -91,6 +103,9 @@ export default {
         saveTurnData() {
             this.isLoading = true
             let url = this.turn.id ? route('turns.edit', this.turn.id) : route('turns.create')
+            if (this.forPayment) {
+                this.turn.status_id = 3
+            }
             axios.post(url, this.turn)
                 .then(response => {
                     if (response.status === 200) {
