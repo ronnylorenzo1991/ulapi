@@ -15,7 +15,7 @@
                         </button>
                     </div>
                     <div class="right">
-                        <multi_select name="selectView" :searchable="false" track-by="value" label='name'
+                        <multi_select name="selectView" :searchable="false" track-by="value" label='name' style="font-size: 15px !important;"
                                       v-model="currentViewType" :options="getSelectViewOptions"/>
                     </div>
                 </div>
@@ -77,7 +77,7 @@ import format from 'date-fns/format';
 import ContextMenu from "./ContextMenu";
 
 export default {
-    name: "dashboard",
+    name: "Calendar",
 
     components: {
         FullCalendar,
