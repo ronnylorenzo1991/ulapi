@@ -69,6 +69,15 @@
                                type="text">
                     </div>
                 </div>
+                <div class="form-group mb-3">
+                    <div class="input-group input-group-merge input-group-alternative">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fa fa-phone"></i></span>
+                        </div>
+                        <input v-model="newUser.phone" class="form-control" placeholder="Inserte Telefono"
+                               type="text">
+                    </div>
+                </div>
                 <div class="form-group">
                     <div class="input-group input-group-merge input-group-alternative">
                         <div class="input-group-prepend">
@@ -114,6 +123,7 @@ export default {
             newUser: {
                 name: null,
                 email: null,
+                phone: null,
                 role: null,
             },
             lists: {
@@ -124,6 +134,13 @@ export default {
                     name: 'name',
                     title: 'Nombre',
                     sortField: 'name',
+                    titleClass: "text-left",
+                    dataClass: "text-left",
+                },
+                {
+                    name: 'phone',
+                    title: 'Teléfono',
+                    sortField: 'phone',
                     titleClass: "text-left",
                     dataClass: "text-left",
                 },
@@ -192,6 +209,7 @@ export default {
                 this.newUser.id = userData.id
                 this.newUser.name = userData.name
                 this.newUser.email = userData.email
+                this.newUser.phone = userData.phone
                 this.newUser.role = userData.roles[0].id
             }
             this.showNewUserModal = true

@@ -527,6 +527,7 @@ th.fc-col-header-cell {
     color: #2d2d2d;
     margin: 0 27px;
     font-size: 22px;
+    padding-top: 4px;
 }
 
 a.fc-daygrid-event {

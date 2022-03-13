@@ -85,15 +85,26 @@
             <ul class="navbar-nav">
                 @if(auth()->user()->hasPermissionGroup('dashboard'))
                     <li class="nav-item">
-                        <a class="nav-link {{ Request::url() == route('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
+                        <a class="nav-link {{ Request::url() == route('dashboard') ? 'active' : '' }}"
+                           href="{{ route('dashboard') }}">
                             <i class="ni ni ni-tv-2 {{ Request::url() == route('dashboard') ? 'text-secondary' : 'text-primary' }}"></i>
                             <span class="nav-link-text">{{ __('Dashboard') }}</span>
                         </a>
                     </li>
                 @endif
+                @if(auth()->user()->hasPermissionGroup('turns'))
+                    <li class="nav-item">
+                        <a class="nav-link {{ Request::url() == route('turns') ? 'active' : '' }}"
+                           href="{{ route('turns') }}">
+                            <i class="ni ni-archive-2 {{ Request::url() == route('turns') ? 'text-secondary' : 'text-primary' }}"></i>
+                            <span class="nav-link-text">{{ __('Turnos') }}</span>
+                        </a>
+                    </li>
+                @endif
                 @if(auth()->user()->hasPermissionGroup('settings'))
                     <li class="nav-item">
-                        <a class="nav-link {{ Request::url() == route('settings') ? 'active' : '' }}" href="{{ route('settings') }}">
+                        <a class="nav-link {{ Request::url() == route('settings') ? 'active' : '' }}"
+                           href="{{ route('settings') }}">
                             <i class="ni ni-ui-04 {{ Request::url() == route('settings') ? 'text-secondary' : 'text-primary' }}"></i>
                             <span class="nav-link-text">{{ __('Configuracion') }}</span>
                         </a>

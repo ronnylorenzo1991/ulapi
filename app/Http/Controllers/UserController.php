@@ -52,6 +52,7 @@ class UserController extends Controller
         $user = [
             'name'     => $request->get('name'),
             'email'    => $request->get('email'),
+            'phone'    => $request->get('phone'),
             'password' => Hash::make('default123456*'),
         ];
 
@@ -63,6 +64,7 @@ class UserController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            dd($e);
             return response()->json([
                 'message' => 'Hubo un problema al guardar los datos'
             ], 400);

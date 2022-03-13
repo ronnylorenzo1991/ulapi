@@ -18,20 +18,10 @@ class RoleSeeder extends Seeder
         $admin = Role::create(['name' => 'administrador']);
         $vigilante = Role::create(['name' => 'cliente']);
 
-        Permission::create(['name' => 'settings.weights.create'])->syncRoles([$admin]);
-        Permission::create(['name' => 'settings.weights.edit'])->syncRoles([$admin]);
-        Permission::create(['name' => 'settings.weights.show'])->syncRoles([$admin]);
-        Permission::create(['name' => 'settings.weights.delete'])->syncRoles([$admin]);
-
-        Permission::create(['name' => 'settings.cameras.create'])->syncRoles([$admin]);
-        Permission::create(['name' => 'settings.cameras.edit'])->syncRoles([$admin]);
-        Permission::create(['name' => 'settings.cameras.show'])->syncRoles([$admin]);
-        Permission::create(['name' => 'settings.cameras.delete'])->syncRoles([$admin]);
-
-        Permission::create(['name' => 'settings.tasks.create'])->syncRoles([$admin]);
-        Permission::create(['name' => 'settings.tasks.edit'])->syncRoles([$admin]);
-        Permission::create(['name' => 'settings.tasks.show'])->syncRoles([$admin]);
-        Permission::create(['name' => 'settings.tasks.delete'])->syncRoles([$admin]);
+        Permission::create(['name' => 'settings.turns.create'])->syncRoles([$admin]);
+        Permission::create(['name' => 'settings.turns.edit'])->syncRoles([$admin]);
+        Permission::create(['name' => 'settings.turns.show'])->syncRoles([$admin]);
+        Permission::create(['name' => 'settings.turns.delete'])->syncRoles([$admin]);
 
         Permission::create(['name' => 'settings.users.create'])->syncRoles([$admin]);
         Permission::create(['name' => 'settings.users.edit'])->syncRoles([$admin]);

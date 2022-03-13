@@ -28,6 +28,9 @@ Route::middleware(['auth:sanctum', 'verified'])
     ->get('/settings', SpaController::class)->name('settings');
 
 Route::middleware(['auth:sanctum', 'verified'])
+    ->get('/turns', SpaController::class)->name('turns');
+
+Route::middleware(['auth:sanctum', 'verified'])
     ->get('/calendar/all', [CalendarController::class, 'index'])->name('calendar.all');
 
 Route::group(['middleware' => 'auth', 'prefix' => 'users'], function () {
@@ -74,7 +77,7 @@ Route::group(['middleware' => 'auth', 'prefix' => 'defaults'], function () {
         ->name('defaults.lists');
 });
 
-Route::group(['middleware' => 'auth', 'prefix' => 'camera'], function () {
+Route::group(['middleware' => 'auth', 'prefix' => 'turns'], function () {
     Route::get('/all', [TurnController::class, 'getAll'])
         ->name('turns.all');
     Route::get('{id}/show', [TurnController::class, 'get'])

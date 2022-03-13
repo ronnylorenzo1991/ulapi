@@ -85,7 +85,6 @@ export default {
             defaultTurn: {
                 time: null,
                 date: null,
-                request: false,
                 user_id: false,
             },
             availableTimes: [
@@ -232,7 +231,6 @@ export default {
                             id: response.data.turn.id,
                             time: response.data.turn.time,
                             date: this.getDateFormatted(response.data.turn.date),
-                            request: response.data.turn.request,
                             user_id: response.data.turn.user_id,
                         }
                         if (this.forPayment) {
