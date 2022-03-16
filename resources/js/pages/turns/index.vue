@@ -170,7 +170,7 @@ export default {
                 {
                     name: 'user',
                     title: 'Clienta',
-                    sortField: 'user',
+                    sortField: 'users.name',
                     titleClass: "text-left",
                     dataClass: "text-left",
                     formatter: (value) => {
@@ -180,7 +180,7 @@ export default {
                 {
                     name: 'status',
                     title: 'Estado',
-                    sortField: 'status',
+                    sortField: 'turn_statuses.name',
                     titleClass: "text-left",
                     dataClass: "text-left",
                     formatter: (value) => {
@@ -224,7 +224,7 @@ export default {
                 case 1:
                     return '<span class="badge badge-warning badge-md ml-1 mr-1 text-black">' + value['name'] + '</span>';
                 case 2:
-                    return '<span class="badge badge-info badge-md ml-1 mr-1 text-white">' + value['name'] + '</span>';
+                    return '<span class="badge badge-info badge-md ml-1 mr-1 text-blue">' + value['name'] + '</span>';
                 case 3:
                     return '<span class="badge badge-success badge-md ml-1 mr-1 text-black">' + value['name'] + '</span>';
             }
@@ -244,6 +244,7 @@ export default {
 
         closeCreateTurnModal() {
             this.showNewTurnModal = false
+            this.forPayment = false
             this.resetTurnData()
         },
 
@@ -325,17 +326,18 @@ export default {
 
         changeTurnStatus(turn, status) {
             this.isLoading = true
-            axios.post(route('turns.edit', turn.extendedProps.db_id),
+            axios.post(route('turns.edit', turn.id),
                 {
-                    time: turn.extendedProps.time,
-                    user_id: turn.extendedProps.user_id,
+                    time: turn.time,
+                    user_id: turn.user_id,
                     status_id: status,
-                    date: this.getDateFormatted(turn.start),
+                    date: turn.date,
                 })
                 .then(response => {
                     if (response.status === 200) {
                         this.isLoading = false
-                        this.reloadCalendar()
+                        dialog.success(response.data.message)
+                        this.reloadTable('turnTable', 'turnVueTable')
                     } else {
                         dialog.error()
                     }

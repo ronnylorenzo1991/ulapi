@@ -26,6 +26,8 @@ class TurnController extends Controller
             $sortDir = $sortData[1];
         }
 
+        $sortBy =  $sortBy === 'id' ? 'turns.id' : $sortBy;
+
         $perPage = (int)$request->get('per_page');
         $page = (int)$request->get('page');
 
