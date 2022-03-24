@@ -235,7 +235,7 @@ export const dotsChart = {
 };
 
 export const doughnutChart = {
-    createChart(chartId, data, labels) {
+    createChart(chartId, data, labels, colors) {
         const ctx = document.getElementById(chartId).getContext("2d");
 
         new Chart(ctx, {
@@ -247,11 +247,7 @@ export const doughnutChart = {
                         label: "Dataset 1",
                         tension: 0.4,
                         data: data,
-                        backgroundColor: [
-                            "#2dce89",
-                            "#fb6340",
-                            "#f5365c",
-                        ],
+                        backgroundColor: colors,
                         showLine: false,
                         barPercentage: 1.6,
                     },
@@ -262,7 +258,7 @@ export const doughnutChart = {
                 maintainAspectRatio: false,
                 cutoutPercentage: 83,
                 legend: {
-                    display: false,
+                    display: true,
                 },
                 tooltips: {
                     enabled: true,

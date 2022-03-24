@@ -90,4 +90,6 @@ Route::group(['middleware' => 'auth', 'prefix' => 'turns'], function () {
         ->name('turns.remove');
     Route::post('{id}/set_status', [TurnController::class, 'setStatus'])
         ->name('turns.setStatus');
+    Route::get('/total_by_status', [TurnController::class, 'getTotalByStatus'])
+        ->name('turns.total_by_status');
 });

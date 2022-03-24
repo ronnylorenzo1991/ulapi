@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Turns\Entity\Turn;
 use App\Models\Turns\Repository\TurnRepository;
 use Illuminate\Http\Request;
 
@@ -94,7 +95,6 @@ class TurnController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            dd($e);
             return response()->json([
                 'message' => 'Hubo un problema al guardar los datos'
             ], 400);
@@ -115,5 +115,15 @@ class TurnController extends Controller
                 'message' => 'Hubo un problema al guardar los datos'
             ], 400);
         }
+    }
+
+    public function getTotalByStatus() {
+        $pending = Turn::where('status_id', 1)->get()->count();
+        $confirmed = Turn::where('status_id', 2)->get()->count();
+        $pay = Turn::where('status_id', 3)->get()->count();
+        return json_encode([
+            $pending, $confirmed, $pay
+        ]);
+
     }
 }
