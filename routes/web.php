@@ -92,4 +92,8 @@ Route::group(['middleware' => 'auth', 'prefix' => 'turns'], function () {
         ->name('turns.setStatus');
     Route::get('/total_by_status', [TurnController::class, 'getTotalByStatus'])
         ->name('turns.total_by_status');
+    Route::get('/income_expenses', [TurnController::class, 'getIncomeExpenses'])
+        ->name('turns.income_expenses');
+    Route::get('/turns_by_month', [TurnController::class, 'getTurnsByMonth'])
+        ->name('turns.by_month');
 });

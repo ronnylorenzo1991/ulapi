@@ -7,7 +7,45 @@
                 </div>
             </div>
         </div>
-        <div class="container-fluid mt--6">
+        <div class="container-fluid mt--7">
+            <div class="row mt-5 mb-5">
+                <div class="col-xl-6 mb-5 mb-xl-0">
+                    <div class="card bg-gradient-default shadow">
+                        <div class="card-header bg-transparent">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <h6 class="text-uppercase text-light ls-1 mb-1">Turnos Por Mes</h6>
+                                    <h2 class="text-white mb-0"></h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-area">
+                                <canvas :height="350" :id="lineChartId" :key="lineChartKey"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-6 mb-5 mb-xl-0">
+                    <div class="card shadow">
+                        <div class="card-header bg-transparent">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <h6 class="text-uppercase ls-1 mb-1">Turnos</h6>
+                                    <h2 class="mb-0">Estados</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-area">
+                                <canvas :height="350" :id="percentStatsId"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid mt-5 mb-6">
             <div class="row">
                 <div class="col">
                     <div class="card shadow">
@@ -43,44 +81,6 @@
                 </div>
             </div>
         </div>
-        <div class="container-fluid mt-5">
-            <div class="row mt-5 mb-5">
-                <div class="col-xl-6 mb-5 mb-xl-0">
-                    <div class="card bg-gradient-default shadow">
-                        <div class="card-header bg-transparent">
-                            <div class="row align-items-center">
-                                <div class="col">
-                                    <h6 class="text-uppercase text-light ls-1 mb-1">Gastos vs Ingresos</h6>
-                                    <h2 class="text-white mb-0"></h2>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="chart-area">
-                                <canvas :height="350"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-6 mb-5 mb-xl-0">
-                    <div class="card shadow">
-                        <div class="card-header bg-transparent">
-                            <div class="row align-items-center">
-                                <div class="col">
-                                    <h6 class="text-uppercase ls-1 mb-1">Turnos</h6>
-                                    <h2 class="mb-0">Estados</h2>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="chart-area">
-                                <canvas :height="350" :id="percentStatsId"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
         <turn-modal :current-turn="currentTurn"
                     :lists="lists"
                     :available-times="availableTimes"
@@ -98,7 +98,7 @@ import "flatpickr/dist/flatpickr.css";
 import dialog from "../../libs/custom/dialog";
 import TurnModal from "./partials/TurnModal";
 import format from "date-fns/format";
-import {lineChart, doughnutChart, barChartStacked} from "../../components/Charts/Chart";
+import {lineChart, doughnutChart, barChartStacked, lineChartDouble} from "../../components/Charts/Chart";
 
 export default {
     name: "dashboard",
@@ -113,7 +113,10 @@ export default {
     data: function () {
         return {
             turnsByStatus: [],
-            percentStatsId: 'percentStatsChart',
+            incomeExpensesData: [],
+            lineChartKey: 0,
+            percentStatsId: 'turnsByStatusChart',
+            lineChartId: 'lineChart',
             turnModalKey: 0,
             forPayment: false,
             turnsUrl: route('calendar.all'),
@@ -131,7 +134,13 @@ export default {
                 '10:00:00',
                 '14:00:00',
                 '16:00:00'
-            ]
+            ],
+            generalFilters: {
+                pickerDates: {
+                    startDate: new Date(new Date().getFullYear(), 0, 1),
+                    endDate: new Date(new Date().getFullYear(), 11, 31),
+                },
+            },
         }
     },
 
@@ -332,6 +341,37 @@ export default {
             return new Intl.DateTimeFormat("en-US").format(stringDate);
         },
 
+        getTurnsByMonth() {
+            this.isLoading = true
+            this.lineChartKey++
+            axios.get(route('turns.by_month') + `?startDate=${ this.getFormatDate(this.generalFilters.pickerDates.startDate) }&endDate=${ this.getFormatDate(this.generalFilters.pickerDates.endDate) }`)
+                .then(response => {
+                    if (response.status === 200) {
+                        this.incomeExpensesData = response.data.totals
+                        lineChart.createChart(
+                            this.lineChartId,
+                            this.incomeExpensesData,
+                            response.data.labels
+                        );
+                        this.isLoading = false
+                    } else {
+                        this.isLoading = false
+                        dialog.error()
+                    }
+                }).catch(error => {
+                console.log(error)
+                this.isLoading = false
+                if (!error.response) {
+                    // network error
+                    this.errorStatus = 'Error: Network Error';
+                    dialog.error(this.errorStatus)
+                } else {
+                    this.errorStatus = error.response.data.message;
+                    dialog.error(this.errorStatus)
+                }
+            })
+        },
+
         getPercentageStats() {
             this.isLoading = true
             axios.get(route('turns.total_by_status'))
@@ -370,6 +410,7 @@ export default {
     mounted() {
         this.getLists(['permissions', 'clients'])
         this.getPercentageStats()
+        this.getTurnsByMonth()
     }
 }
 </script>

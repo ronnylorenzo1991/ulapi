@@ -121,9 +121,33 @@ class TurnController extends Controller
         $pending = Turn::where('status_id', 1)->get()->count();
         $confirmed = Turn::where('status_id', 2)->get()->count();
         $pay = Turn::where('status_id', 3)->get()->count();
+
         return json_encode([
             $pending, $confirmed, $pay
         ]);
+    }
 
+    public function getIncomeExpenses(Request $request)
+    {
+        $filterParams = [
+            'startDate' => $request->get('startDate'),
+            'endDate' => $request->get('endDate'),
+        ];
+
+        [$totals, $labels] = $this->turnRepository->getIncomeExpenses($filterParams);
+
+        return json_encode(['totals' => $totals, 'labels' => $labels]);
+    }
+
+    public function getTurnsByMonth(Request $request)
+    {
+        $filterParams = [
+            'startDate' => $request->get('startDate'),
+            'endDate' => $request->get('endDate'),
+        ];
+
+        [$totals, $labels] = $this->turnRepository->getTurnsByMonth($filterParams);
+
+        return json_encode(['totals' => $totals, 'labels' => $labels]);
     }
 }

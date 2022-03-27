@@ -6,7 +6,7 @@ function randomScalingFactor() {
 }
 
 export const lineChart = {
-    createChart(chartId, data, labels) {
+    createChart(chartId, data, labels, title) {
         const ctx = document.getElementById(chartId).getContext("2d");
 
         new Chart(ctx, {
@@ -15,7 +15,7 @@ export const lineChart = {
                 labels: labels,
                 datasets: [
                     {
-                        label: "Eventos",
+                        label: title,
                         tension: 0.4,
                         borderWidth: 4,
                         borderColor: "#5e72e4",
@@ -50,6 +50,8 @@ export const lineChart = {
                                 fontColor: "#8898aa",
                                 fontSize: 13,
                                 fontFamily: "Open Sans",
+                                beginAtZero: true,
+                                callback: function(value) {if (value % 1 === 0) {return value;}}
                             },
                         },
                     ],
@@ -73,6 +75,91 @@ export const lineChart = {
                     padding: 0,
                 },
             },
+        });
+    },
+};
+
+export const lineChartDouble = {
+    createChart(chartId, data, labels, title) {
+        const ctx = document.getElementById(chartId).getContext("2d");
+
+        new Chart(ctx, {type: 'line',
+            data: {
+                labels: ['1', '2', '3', '4', '5'],
+                datasets: [{
+                    label: 'A',
+                    yAxisID: 'A',
+                    data: [100, 96, 84, 76, 69],
+                    tension: 0.4,
+                    borderWidth: 4,
+                    borderColor: "#5e72e4",
+                    pointRadius: 0,
+                    backgroundColor: "transparent",
+                    barPercentage: 1.6,
+                }, {
+                    label: 'B',
+                    yAxisID: 'B',
+                    data: [1, 1, 1, 1, 0],
+                    tension: 0.4,
+                    borderWidth: 4,
+                    borderColor: "#f14343",
+                    pointRadius: 0,
+                    backgroundColor: "transparent",
+                    barPercentage: 1.6,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                legend: {
+                    display: false,
+                },
+                tooltips: {
+                    enabled: true,
+                    mode: "index",
+                    intersect: false,
+                },
+                scales: {
+                    yAxes: [{
+                        id: 'A',
+                        type: 'linear',
+                        position: 'left',
+                        gridLines: {
+                            drawBorder: false,
+                            color: "transparent",
+                            zeroLineColor: "transparent",
+                        },
+                        ticks: {
+                            padding: 0,
+                            fontColor: "#8898aa",
+                            fontSize: 13,
+                            fontFamily: "Open Sans",
+                            beginAtZero: true,
+                            callback: function(value) {if (value % 1 === 0) {return value;}}
+                        },
+                    }, {
+
+                        id: 'B',
+                        type: 'linear',
+                        position: 'right',
+                        gridLines: {
+                            drawBorder: false,
+                            color: "transparent",
+                            zeroLineColor: "transparent",
+                        },
+                        ticks: {
+                            max: 1,
+                            min: 0,
+                            padding: 0,
+                            fontColor: "#8898aa",
+                            fontSize: 13,
+                            fontFamily: "Open Sans",
+                            beginAtZero: true,
+                            callback: function(value) {if (value % 1 === 0) {return value;}}
+                        }
+                    }]
+                }
+            }
         });
     },
 };
